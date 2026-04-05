@@ -137,8 +137,7 @@ public class DSMRTelegram {
     /** Slave e-meter measurement timestamp   */ ZonedDateTime slaveEMeterTimestamp;
     /** Slave e-meter consumption in kWh      */ Double        slaveEMeterkWh;
 
-    /** Package scope reset for ParseDSMRTelegram */
-    void reset() {
+    public void reset() {
         valid = false;
         validCRC = false;
         rawIdent = null;

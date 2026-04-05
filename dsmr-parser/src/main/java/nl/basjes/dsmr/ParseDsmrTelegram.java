@@ -133,10 +133,13 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
         private static final ParseDsmrTelegram INSTANCE = new ParseDsmrTelegram(null);
     }
 
-    public static DSMRTelegram parseThreadUnsafe(final String telegram, final DSMRTelegram dsmrTelegram) {
+    /**
+     * @param telegram  The telegram
+     * @param dsmrTelegram  The output variable
+     */
+    public static void parseThreadUnsafe(final String telegram, final DSMRTelegram dsmrTelegram) {
         ParseDsmrTelegramHelper.INSTANCE.initialize(telegram, dsmrTelegram);
-
-        return ParseDsmrTelegramHelper.INSTANCE.parse();
+        ParseDsmrTelegramHelper.INSTANCE.parse();
     }
 
     /** GJP 2026-04-05 Use a StringBuilder instead of a String since its contents can be changed. */
