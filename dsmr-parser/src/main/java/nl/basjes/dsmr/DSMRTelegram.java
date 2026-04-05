@@ -136,4 +136,30 @@ public class DSMRTelegram {
     /** Slave e-meter device id               */ String        slaveEMeterEquipmentId;
     /** Slave e-meter measurement timestamp   */ ZonedDateTime slaveEMeterTimestamp;
     /** Slave e-meter consumption in kWh      */ Double        slaveEMeterkWh;
+
+    /** Package scope reset for ParseDSMRTelegram */
+    void reset() {
+        valid = false;
+        validCRC = false;
+        rawIdent = null;
+        equipmentBrandTag = null;
+        ident = null;
+        crc = null;
+        p1Version = null;
+        timestamp = null;
+        receiveTimestamp = null;
+        equipmentId = null;
+        electricityTariffIndicator = null;
+        electricityReceivedLowTariff = null;
+        electricityReceivedNormalTariff = null;
+        electricityPowerReceived = null;
+        electricityReturnedLowTariff = null;
+        electricityReturnedNormalTariff = null;
+        electricityPowerReturned = null;
+        powerFailures = null;
+        longPowerFailures = null;
+        powerFailureEventLogSize = 0L;      // Power failure event log size (as indicated in the output)
+        powerFailureEventLog.clear();
+        mBusEvents.clear();
+    }
 }

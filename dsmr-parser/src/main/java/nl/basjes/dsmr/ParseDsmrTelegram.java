@@ -128,27 +128,47 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
         return new ParseDsmrTelegram(telegram).parse();
     }
 
-    private final String          telegramString;
+    // inspired by https://www.digitalocean.com/community/tutorials/java-singleton-design-pattern-best-practices-examples#5-bill-pugh-singleton-implementation
+    private static final class ParseDsmrTelegramHelper {
+        private static final ParseDsmrTelegram INSTANCE = new ParseDsmrTelegram(null);
+    }
+
+    public static DSMRTelegram parseThreadUnsafe(String telegram) {
+        ParseDsmrTelegramHelper.INSTANCE.initialize(telegram);
+
+        return ParseDsmrTelegramHelper.INSTANCE.parse();
+    }
+
+    /** Use a StringBuilder instead of a String since its contents can be changed. */
+    private final StringBuilder   telegramString = new StringBuilder(1000);
     private final DSMRTelegram    dsmrTelegram;
     private final TimestampParser timestampParser = new TimestampParser();
 
     private static final ZoneId EUROPE_AMSTERDAM = ZoneId.of("Europe/Amsterdam");
 
+    private void setTelegramString(final String telegram) {
+        telegramString.replace(0, telegramString.length(), telegram == null ? "" : telegram);
+    }
+
+    private String getTelegramString() {
+        return telegramString.toString();
+    }
+
     private ParseDsmrTelegram(String telegram) {
-        telegramString = telegram;
+        setTelegramString(telegram);
         dsmrTelegram = new DSMRTelegram();
         dsmrTelegram.receiveTimestamp = ZonedDateTime.now(EUROPE_AMSTERDAM);
-        dsmrTelegram.validCRC = CheckCRC.crcIsValid(telegramString);
+        dsmrTelegram.validCRC = CheckCRC.crcIsValid(getTelegramString());
         dsmrTelegram.valid = dsmrTelegram.validCRC;
     }
 
     private DSMRTelegram parse() {
-        if (telegramString == null || telegramString.isEmpty()) {
+        if (getTelegramString().isEmpty()) {
             dsmrTelegram.valid = false;
             return null;
         }
 
-        CodePointCharStream input = CharStreams.fromString(telegramString);
+        CodePointCharStream input = CharStreams.fromString(getTelegramString());
         DsmrLexer           lexer = new DsmrLexer(input);
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -427,5 +447,21 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
     public Void visitUnknownCosemId(DsmrParser.UnknownCosemIdContext ctx) {
         // Ignore
         return null;
+    }
+
+    /** Should behave like the private constructor (without constructing new objects). */
+    void initialize(String telegram) {
+        hasSyntaxError = false;
+
+        // see private constructor
+        setTelegramString(telegram);
+        dsmrTelegram.reset();
+        dsmrTelegram.receiveTimestamp = ZonedDateTime.now(EUROPE_AMSTERDAM);
+        dsmrTelegram.validCRC = CheckCRC.crcIsValid(getTelegramString());
+        dsmrTelegram.valid = dsmrTelegram.validCRC;
+
+        // no need to re-initailize timestampParser since it is final and it has only static attributes
+        // no need to re-initailize ZoneId
+        // no need to re-initailize IDENT_PATTERN
     }
 }
