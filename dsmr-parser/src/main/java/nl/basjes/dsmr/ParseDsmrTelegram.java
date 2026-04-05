@@ -137,7 +137,7 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
      * @param telegram  The telegram
      * @param dsmrTelegram  The output variable
      */
-    public static void parseThreadUnsafe(final String telegram, final DSMRTelegram dsmrTelegram) {
+    public static synchronized void parse(final String telegram, final DSMRTelegram dsmrTelegram) {
         ParseDsmrTelegramHelper.INSTANCE.initialize(telegram, dsmrTelegram);
         ParseDsmrTelegramHelper.INSTANCE.parse();
     }
