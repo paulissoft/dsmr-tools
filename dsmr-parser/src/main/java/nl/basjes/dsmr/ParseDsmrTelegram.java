@@ -133,15 +133,16 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
         private static final ParseDsmrTelegram INSTANCE = new ParseDsmrTelegram(null);
     }
 
-    public static DSMRTelegram parseThreadUnsafe(String telegram) {
-        ParseDsmrTelegramHelper.INSTANCE.initialize(telegram);
+    public static DSMRTelegram parseThreadUnsafe(final String telegram, final DSMRTelegram dsmrTelegram) {
+        ParseDsmrTelegramHelper.INSTANCE.initialize(telegram, dsmrTelegram);
 
         return ParseDsmrTelegramHelper.INSTANCE.parse();
     }
 
-    /** Use a StringBuilder instead of a String since its contents can be changed. */
+    /** GJP 2026-04-05 Use a StringBuilder instead of a String since its contents can be changed. */
     private final StringBuilder   telegramString = new StringBuilder(1000);
-    private final DSMRTelegram    dsmrTelegram;
+    /** GJP 2026-04-05 Do not use a final dsmrTelegram. */
+    private DSMRTelegram    dsmrTelegram = null;
     private final TimestampParser timestampParser = new TimestampParser();
 
     private static final ZoneId EUROPE_AMSTERDAM = ZoneId.of("Europe/Amsterdam");
@@ -450,12 +451,13 @@ public final class ParseDsmrTelegram extends DsmrBaseVisitor<Void> implements AN
     }
 
     /** Should behave like the private constructor (without constructing new objects). */
-    void initialize(String telegram) {
+    void initialize(final String telegramStringSrc, final DSMRTelegram dsmrTelegramSrc) {
         hasSyntaxError = false;
 
         // see private constructor
-        setTelegramString(telegram);
-        dsmrTelegram.reset();
+        setTelegramString(telegramStringSrc);
+        dsmrTelegram = dsmrTelegramSrc;
+        dsmrTelegram.reset(); // points to dsmrTelegramSrc as well
         dsmrTelegram.receiveTimestamp = ZonedDateTime.now(EUROPE_AMSTERDAM);
         dsmrTelegram.validCRC = CheckCRC.crcIsValid(getTelegramString());
         dsmrTelegram.valid = dsmrTelegram.validCRC;
